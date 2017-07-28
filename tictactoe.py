@@ -1,4 +1,4 @@
-class Board():
+class GenerateBoard():
 
     def __init__(self, rows, columns):
         self.board = list()
@@ -9,10 +9,5 @@ class Board():
         for row in range(self.rows):
             self.board.append(list())
             for column in range(self.columns):
-                self.board[row].append('x')
+                self.board[row].append('')
         return self.board
-
-    def print_board(self):
-        board = self.generate_board()
-        for row in board:
-            print(' '.join(row))
