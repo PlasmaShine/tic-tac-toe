@@ -1,131 +1,161 @@
-import itertools
-import random
-import sys
+from random import randint
 
 
-def select_player(player_list):
-    while True:
-        player = input('Select player (X or O): ').upper()
-        if player in player_list:
-            break
-        else:
-            print('Invalid input')
-    return player
+board_size = 3
+players = 'XO'
 
-def start_game():
-    print('Start game')
 
-def generate_board():
-    board = list()
-    for row in range(3):
-        board.append(list())
-        for column in range(3):
-            board[row].append(' ')
-    return board
+class Board:
 
-def print_board(board):
-    for (index, row) in enumerate(board):
-        if index == 0:
-            print('    0   1   2 ')
-            print('  +---+---+---+')
-            print('{0} |'.format(index), ' | '.join(row), '|')
-            print('  +---+---+---+')
-        else:
-            print('{0} |'.format(index), ' | '.join(row), '|')
-            print('  +---+---+---+')
+    def __init__(self, board_size):
+        self.board_size = board_size
+        self.board = [[' ' for column in range(self.board_size)]for row in range(self.board_size)]
 
-def user_turn(board, player):
-    while True:
-        try:
-            tile = input('{0} Turn: '.format(player))
-            row = int(tile[0])
-            column = int(tile[-1])
-            if all(i in range(3) for i in (row, column,)):
-                if board[row][column] == ' ':
-                    board[row][column] = player
-                    break
-                else:
-                    print('Invalid turn')
+    def print_board(self):
+        for (index, rows) in enumerate(self.board):
+            if index == 0:
+                columns = [str(column) for column in range(self.board_size)]
+                print('   ', '   '.join(columns), sep='  ')
+                print('   ', '+{0}'.format('---+' * self.board_size), sep='')
+                print('{0: =2d} '.format(index), ' | '.join(rows), sep='| ', end=' |\n')
+                print('   ', '+{0}'.format('---+' * self.board_size), sep='')
             else:
+                print(' {0} '.format(index), ' | '.join(rows), sep='| ', end=' |\n')
+                print('   ', '+{0}'.format('---+' * self.board_size), sep='')
+
+class Player:
+
+    def __init__(self, players):
+        self.players = players
+        self.player = ''
+        self.player_config = {player: None for player in self.players}
+        self.player_cycle = self.__cycle_players()
+
+    def select_player(self):
+        while True:
+            player_input = input('Select player (X or O): ').upper()
+            if self._validate_player_input(player_input):
+                self.player = player_input
+                break
+        self._set_player_configuration()
+
+    def _validate_player_input(self, player_input):
+        if player_input in self.players:
+            return True
+        else:
+            print('Invalid input!')
+            return False
+
+    def _set_player_configuration(self):
+        for (key, value) in self.player_config.items():
+            if key == self.player:
+                self.player_config[key] = False
+            else:
+                self.player_config[key] = True
+
+    def cycle_players(self):
+        while self.players:
+            for player in self.players:
+                yield player
+
+    __cycle_players = cycle_players
+
+class Game(Board, Player):
+
+    def __init__(self, board_size, players):
+        Board.__init__(self, board_size)
+        Player.__init__(self, players)
+        self.row = None
+        self.column = None
+
+    def cycle_players(self):
+        self.player = next(self.player_cycle)
+
+    def select_board_square(self):
+        while True:
+            if not self.player_config[self.player]:
+                board_square_input = input('{0} Turn: '.format(self.player)).split(',')
+            else:
+                board_square_input = [randint(0, self.board_size - 1), randint(0, self.board_size - 1)]
+            if self._validate_board_square_input(board_square_input):
+                self.row, self.column = self._parse_board_square_input(board_square_input)
+                break
+        self._mark_board_square()
+
+    def _validate_board_square_input(self, board_square_input):
+        # check is list, has 2 axis points, both axis points within range
+        if type(board_square_input) is list:
+            try:
+                row, column = self._parse_board_square_input(board_square_input)
+                if not self.board[row][column] in self.players:
+                    return True
+                else:
+                    if not self.player_config[self.player]:
+                        print('Invalid input')
+                    return False
+            except IndexError:
                 print('Invalid input')
-        except ValueError:
-            print('Invalid input')
-    return row, column, board
-
-def computer_turn(board, player):
-    while True:
-        row = random.randint(0, 2)
-        column = random.randint(0, 2)
-        if board[row][column] == ' ':
-            board[row][column] = player
-            break
-    print('{0} Turn: {1}{2}'.format(player, row, column))
-    return row, column, board
-
-def evaluate_turn(board, row, column, player):
-    if board[row].count(player) == 3:
-        return True
-    elif list(board[i][column] for i in range(3)).count(player) == 3:
-        return True
-    elif list(board[i][i] for i in range(3)).count(player) == 3:
-        return True
-    elif list(board[i][2 - i] for i in range(3)).count(player) == 3:
-        return True
-    else:
-        return False
-
-def board_status(result, player):
-    if result is True:
-        print('{0} Winner'.format(player))
-        return False
-    else:
-        return True
-
-def end_game():
-    while True:
-        selection = input('Restart game (Y or N)? ').upper()
-        if selection in ['Y', 'N']:
-            break 
+                return False
+            except ValueError:
+                print('Invalid input')
+                return False
         else:
             print('Invalid input')
-    if selection == 'N':
-        print('End game')
-        return False
-    else:
-        return True
+            return False
 
+    def _parse_board_square_input(self, board_square_input):
+        return (int(axis_point) for axis_point in board_square_input)
 
-while True:
-    player_list = ['X', 'O']
-    player_config = {'X': None, 'O': None}
+    def _mark_board_square(self):
+        self.board[self.row][self.column] = self.player
 
-    user = select_player(player_list)
-    computer = player_list[player_list.index(user) - 1]
+    def is_winner(self):
+        if self.board[self.row].count(self.player) == self.board_size:
+            return True
+        elif [self.board[row][self.column] for row in range(self.board_size)].count(self.player) == self.board_size:
+            return True
+        elif [self.board[index][index] for index in range(self.board_size)].count(self.player) == self.board_size:
+            return True
+        elif [self.board[(self.board_size - 1) - index][index] for index in range(self.board_size)].count(self.player) == self.board_size:
+            return True
+        else:
+            return False
 
-    player_config[user] = user_turn
-    player_config[computer] = computer_turn
-
-    board = generate_board()
-    next_player = itertools.cycle(player_list)
-
-    start_game()
-    print_board(board)
-
-    turn_tally = 0
-    while True:
-        if turn_tally == 9:
-            print('XO Draw')
-            break
-        if turn_tally < 9:
-            player = next(next_player)
-            turn = player_config[player]
-            row, column, board = turn(board, player)
-            print_board(board)
-            turn_result = evaluate_turn(board, row, column, player)
-            if not board_status(turn_result, player):
+    def select_restart_option(self):
+        while True:
+            restart_option_input = input('Restart game (Y or N)? ').upper()
+            if self._validate_restart_option_input(restart_option_input):
                 break
-        turn_tally += 1
-    if not end_game():
-        break
+        if restart_option_input == 'N':
+            print('End game')
+            return False
+        else:
+            return True
 
-sys.exit()
+    def _validate_restart_option_input(self, restart_option_input):
+        if restart_option_input in 'YN':
+            return True
+        else:
+            print('Invalid input')
+            return False
+
+
+# while True:
+#     game = Game(board_size, players)
+#     game.select_player()
+#     game.print_board()
+#     number_of_turns = 0
+#     while number_of_turns < (board_size * board_size):
+#         game.cycle_players()
+#         game.select_board_square()
+#         if game.player_config[game.player]:
+#             print('{0} Turn: {1},{2}'.format(game.player, game.row, game.column))
+#         game.print_board()
+#         if game.is_winner():
+#             print('{0} Winner!'.format(game.player))
+#             break
+#         number_of_turns += 1
+#     if number_of_turns == 9:
+#         print('XO Draw!')
+#     if not game.select_restart_option():
+#         break
