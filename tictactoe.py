@@ -140,22 +140,22 @@ class Game(Board, Player):
             return False
 
 
-# while True:
-#     game = Game(board_size, players)
-#     game.select_player()
-#     game.print_board()
-#     number_of_turns = 0
-#     while number_of_turns < (board_size * board_size):
-#         game.cycle_players()
-#         game.select_board_square()
-#         if game.player_config[game.player]:
-#             print('{0} Turn: {1},{2}'.format(game.player, game.row, game.column))
-#         game.print_board()
-#         if game.is_winner():
-#             print('{0} Winner!'.format(game.player))
-#             break
-#         number_of_turns += 1
-#     if number_of_turns == 9:
-#         print('XO Draw!')
-#     if not game.select_restart_option():
-#         break
+while True:
+    game = Game(board_size, players)
+    game.select_player()
+    game.print_board()
+    number_of_turns = 0
+    while number_of_turns < (board_size * board_size):
+        game.cycle_players()
+        game.select_board_square()
+        if game.player_config[game.player]:
+            print('{0} Turn: {1},{2}'.format(game.player, game.row, game.column))
+        game.print_board()
+        if game.is_winner():
+            print('{0} Winner!'.format(game.player))
+            break
+        number_of_turns += 1
+    if number_of_turns == 9:
+        print('XO Draw!')
+    if not game.select_restart_option():
+        break
