@@ -80,6 +80,8 @@ class Game(Board, Player):
             if self._validate_board_square_input(board_square_input):
                 self.row, self.column = self._parse_board_square_input(board_square_input)
                 break
+        if self.player_config[self.player]:
+            print('{0} Turn (row, column): {1}, {2}'.format(self.player, self.row, self.column))
         self._mark_board_square()
 
     def _validate_board_square_input(self, board_square_input):
@@ -147,8 +149,6 @@ while True:
     while number_of_turns < (board_size * board_size):
         game.cycle_players()
         game.select_board_square()
-        if game.player_config[game.player]:
-            print('{0} Turn (row, column): {1},{2}'.format(game.player, game.row, game.column))
         game.print_board()
         if game.is_winner():
             print('{0} Winner!'.format(game.player))
