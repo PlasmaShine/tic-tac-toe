@@ -83,7 +83,6 @@ class Game(Board, Player):
         self._mark_board_square()
 
     def _validate_board_square_input(self, board_square_input):
-        # check is list, has 2 axis points, both axis points within range
         if type(board_square_input) is list:
             try:
                 row, column = self._parse_board_square_input(board_square_input)
