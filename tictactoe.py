@@ -74,7 +74,7 @@ class Game(Board, Player):
     def select_board_square(self):
         while True:
             if not self.player_config[self.player]:
-                board_square_input = input('{0} Turn: '.format(self.player)).split(',')
+                board_square_input = input('{0} Turn (row, column): '.format(self.player)).split(',')
             else:
                 board_square_input = [randint(0, self.board_size - 1), randint(0, self.board_size - 1)]
             if self._validate_board_square_input(board_square_input):
@@ -149,7 +149,7 @@ while True:
         game.cycle_players()
         game.select_board_square()
         if game.player_config[game.player]:
-            print('{0} Turn: {1},{2}'.format(game.player, game.row, game.column))
+            print('{0} Turn (row, column): {1},{2}'.format(game.player, game.row, game.column))
         game.print_board()
         if game.is_winner():
             print('{0} Winner!'.format(game.player))
